@@ -6,11 +6,9 @@
 VM vm;
 
 void initVM() {
-
 }
 
 void freeVM() {
-
 }
 
 static InterpretResult run() {
