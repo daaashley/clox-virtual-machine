@@ -4,16 +4,28 @@
 #include "common.h"
 #include "scanner.h"
 
-typedef struct {
-    const char* start;
-    const char* current;
+typedef struct
+{
+    const char *start;
+    const char *current;
     int line;
 } Scanner;
 
 Scanner scanner;
 
-void initscanner(const char* source) {
+void initscanner(const char *source)
+{
     scanner.start = source;
     scanner.current = source;
     scanner.line = 1;
+}
+
+Token scanToken()
+{
+    scanner.start = scanner.current;
+
+    if (isAtEnd())
+        return makeToken(TOKEN_EOF);
+
+    return errorToken("Unexpected character.");
 }
