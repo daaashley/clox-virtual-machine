@@ -25,6 +25,12 @@ static bool isAtEnd()
     return *scanner.current == '\0';
 }
 
+static char advance()
+{
+    scanner.current++;
+    return scanner.current[-1]
+}
+
 static Token makeToken(TokenType type)
 {
     Token token;
@@ -80,6 +86,9 @@ Token scanToken()
         return makeToken(TOKEN_SLASH);
     case '*':
         return makeToken(TOKEN_STAR);
+    case '!':
+        return makeToken(
+            match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     }
 
     return errorToken("Unexpected character.");
