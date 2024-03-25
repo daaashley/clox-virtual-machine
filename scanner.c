@@ -31,6 +31,29 @@ static char advance()
     return scanner.current[-1];
 }
 
+static char peek()
+{
+    return *scanner.current;
+}
+
+static char peekNext()
+{
+    if (isAtEnd())
+        return '\0';
+    return scanner.current[1];
+}
+
+static bool match(char expected)
+{
+    if (isAtEnd())
+        return false;
+    if (*scanner.current != expected)
+        return false;
+
+    scanner.current++;
+    return true;
+}
+
 static Token makeToken(TokenType type)
 {
     Token token;
@@ -53,14 +76,70 @@ static Token errorToken(const char *message)
     return token;
 }
 
+static void skipWhitespace()
+{
+    for (;;)
+    {
+        char c = peek();
+        switch (c)
+        {
+        case ' ':
+        case '\r':
+        case '\t':
+            advance();
+            break;
+        case '\n':
+            scanner.line++;
+            advance();
+            break;
+        case '/':
+            if (peekNext() == '/')
+            {
+                // A comment goes until the end of the line.
+                while (peek() != '\n' && !isAtEnd())
+                    advance();
+            }
+            else
+            {
+                return;
+            }
+            break;
+
+        default:
+            return;
+        }
+    }
+}
+
+static Token string()
+{
+    while (peek() != '"' && !isAtEnd())
+    {
+        if (peek() == '\n')
+            scanner.line++;
+        advance();
+    }
+
+    if (isAtEnd())
+        return errorToken("Unterminated string.");
+
+    // The closing quote.
+    advance();
+    return makeToken(TOKEN_STRING);
+}
+
 Token scanToken()
 {
+    skipWhitespace();
+
     scanner.start = scanner.current;
 
     if (isAtEnd())
         return makeToken(TOKEN_EOF);
 
     char c = advance();
+    if (isDigit(c))
+        return number();
 
     switch (c)
     {
@@ -98,6 +177,9 @@ Token scanToken()
     case '>':
         return makeToken(
             match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+
+    case '"':
+        return string();
     }
 
     return errorToken("Unexpected character.");
